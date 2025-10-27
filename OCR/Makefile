@@ -1,6 +1,6 @@
 CC = gcc
 CFLAGS = -Wall -Wextra -Wno-unused-parameter
-SRC = main.c array_pointer.c
+SRC = solver.c
 OBJ = $(SRC:.c=.o)
 EXEC = solver
 
