@@ -9,6 +9,7 @@ all: $(EXEC)
 $(EXEC): $(OBJ)
 	$(CC) $(CFLAGS) -o $@ $^
 
+
 clean:
 	rm -f $(OBJ) $(EXEC)
 
