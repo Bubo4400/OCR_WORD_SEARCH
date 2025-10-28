@@ -8,3 +8,4 @@
 *~
 *.DotSettings.user
 .clang-format
+neuralNet
