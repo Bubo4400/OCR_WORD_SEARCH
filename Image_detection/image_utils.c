@@ -1,5 +1,5 @@
 #include "image_utils.h"
-#include <stdlib.h>
+#include <SDL2/SDL_image.h>
 
 SDL_Surface *load_image_grayscale(const char *path)
 {
@@ -9,13 +9,13 @@ SDL_Surface *load_image_grayscale(const char *path)
         return NULL;
     }
 
-    SDL_Surface *gray = SDL_CreateRGBSurfaceWithFormat(0, img->w, img->h, 32,
-        SDL_PIXELFORMAT_RGBA32);
+    SDL_Surface *gray = SDL_CreateRGBSurfaceWithFormat(0, img->w, img->h, 32, SDL_PIXELFORMAT_RGBA32);
     SDL_LockSurface(img);
     SDL_LockSurface(gray);
 
     Uint32 *src = img->pixels;
     Uint32 *dst = gray->pixels;
+
     for (int y = 0; y < img->h; ++y) {
         for (int x = 0; x < img->w; ++x) {
             Uint8 r, g, b;

@@ -2,11 +2,8 @@
 #define IMAGE_UTILS_H
 
 #include <SDL2/SDL.h>
-#include <SDL2/SDL_image.h>
 
-typedef struct {
-    int x, y, w, h;
-} Rect;
+typedef struct { int x, y, w, h; } Rect;
 
 SDL_Surface *load_image_grayscale(const char *path);
 void threshold_image(SDL_Surface *surf, Uint8 thresh);
