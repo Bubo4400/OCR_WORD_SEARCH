@@ -1,47 +1,55 @@
 #include "image_utils.h"
+#include <SDL2/SDL.h>
 #include <SDL2/SDL_image.h>
+#include <stdio.h>
+#include <stdlib.h>
 
-SDL_Surface *load_image_grayscale(const char *path)
+ImageGray *crop_image(ImageGray *src, int x, int y, int w, int h)
 {
-    SDL_Surface *img = IMG_Load(path);
-    if (!img) {
-        SDL_Log("Failed to load image: %s", IMG_GetError());
+    if (!src) return NULL;
+    ImageGray *crop = malloc(sizeof(ImageGray));
+    if (!crop) return NULL;
+
+    crop->w = w;
+    crop->h = h;
+    crop->pixels = malloc(w * h);
+    if (!crop->pixels) {
+        free(crop);
         return NULL;
     }
 
-    SDL_Surface *gray = SDL_CreateRGBSurfaceWithFormat(0, img->w, img->h, 32, SDL_PIXELFORMAT_RGBA32);
-    SDL_LockSurface(img);
-    SDL_LockSurface(gray);
+    for (int j = 0; j < h; j++) {
+        for (int i = 0; i < w; i++) {
+            int src_x = x + i;
+            int src_y = y + j;
+            if (src_x >= 0 && src_x < src->w && src_y >= 0 && src_y < src->h)
+                crop->pixels[j * w + i] = src->pixels[src_y * src->w + src_x];
+            else
+                crop->pixels[j * w + i] = 255; // fond blanc
+        }
+    }
+    return crop;
+}
 
-    Uint32 *src = img->pixels;
-    Uint32 *dst = gray->pixels;
+void save_gray_bmp(ImageGray *img, const char *path)
+{
+    if (!img) return;
 
-    for (int y = 0; y < img->h; ++y) {
-        for (int x = 0; x < img->w; ++x) {
-            Uint8 r, g, b;
-            SDL_GetRGB(src[y * img->w + x], img->format, &r, &g, &b);
-            Uint8 grayv = 0.299 * r + 0.587 * g + 0.114 * b;
-            dst[y * img->w + x] = SDL_MapRGBA(gray->format, grayv, grayv, grayv, 255);
+    SDL_Surface *surface = SDL_CreateRGBSurface(0, img->w, img->h, 32,
+        0x00FF0000, 0x0000FF00, 0x000000FF, 0xFF000000);
+
+    if (!surface) return;
+
+    Uint32 *pixels = surface->pixels;
+    for (int y = 0; y < img->h; y++) {
+        for (int x = 0; x < img->w; x++) {
+            Uint8 v = img->pixels[y * img->w + x];
+            pixels[y * img->w + x] = SDL_MapRGB(surface->format, v, v, v);
         }
     }
 
-    SDL_UnlockSurface(gray);
-    SDL_UnlockSurface(img);
-    SDL_FreeSurface(img);
-    return gray;
-}
-
-void threshold_image(SDL_Surface *surf, Uint8 thresh)
-{
-    SDL_LockSurface(surf);
-    Uint32 *p = surf->pixels;
-    for (int i = 0; i < surf->w * surf->h; ++i) {
-        Uint8 r, g, b;
-        SDL_GetRGB(p[i], surf->format, &r, &g, &b);
-        Uint8 v = r > thresh ? 255 : 0;
-        p[i] = SDL_MapRGBA(surf->format, v, v, v, 255);
-    }
-    SDL_UnlockSurface(surf);
+    SDL_SaveBMP(surface, path);
+    SDL_FreeSurface(surface);
 }
 
 void draw_rect(SDL_Renderer *ren, Rect r, SDL_Color color)

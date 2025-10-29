@@ -15,28 +15,25 @@ ImageGray *load_image_gray(const char *path)
 {
     SDL_Surface *surf = IMG_Load(path);
     if (!surf) {
-        fprintf(stderr, "Error loading image %s: %s\n", path, IMG_GetError());
+        fprintf(stderr, "Erreur : impossible de charger %s\n", path);
         return NULL;
     }
 
-    SDL_LockSurface(surf);
     ImageGray *img = malloc(sizeof(ImageGray));
     img->w = surf->w;
     img->h = surf->h;
-    img->gray = malloc(img->w * img->h);
-    img->bin  = malloc(img->w * img->h);
+    img->pixels = malloc(img->w * img->h);
 
-    Uint8 r, g, b;
-    Uint32 *pixels = (Uint32 *)surf->pixels;
-    for (int y = 0; y < surf->h; y++) {
-        for (int x = 0; x < surf->w; x++) {
-            SDL_GetRGB(pixels[y * surf->w + x], surf->format, &r, &g, &b);
-            unsigned char gray_val = (Uint8)(0.299*r + 0.587*g + 0.114*b);
-            img->gray[y * surf->w + x] = gray_val;
+    Uint32 *data = surf->pixels;
+    SDL_PixelFormat *fmt = surf->format;
+    for (int y = 0; y < img->h; y++) {
+        for (int x = 0; x < img->w; x++) {
+            Uint8 r, g, b;
+            SDL_GetRGB(data[y * img->w + x], fmt, &r, &g, &b);
+            img->pixels[y * img->w + x] = (r + g + b) / 3;
         }
     }
 
-    SDL_UnlockSurface(surf);
     SDL_FreeSurface(surf);
     return img;
 }
@@ -44,8 +41,7 @@ ImageGray *load_image_gray(const char *path)
 void free_image_gray(ImageGray *img)
 {
     if (!img) return;
-    free(img->gray);
-    free(img->bin);
+    free(img->pixels);
     free(img);
 }
 
@@ -55,40 +51,27 @@ void free_image_gray(ImageGray *img)
 static void enhance_contrast(ImageGray *img)
 {
     int min = 255, max = 0;
-    for (int i = 0; i < img->w * img->h; i++) {
-        if (img->gray[i] < min) min = img->gray[i];
-        if (img->gray[i] > max) max = img->gray[i];
+    int size = img->w * img->h;
+
+    for (int i = 0; i < size; i++) {
+        if (img->pixels[i] < min) min = img->pixels[i];
+        if (img->pixels[i] > max) max = img->pixels[i];
     }
     if (max - min < 10) return;
 
-    for (int i = 0; i < img->w * img->h; i++)
-        img->gray[i] = (img->gray[i] - min) * 255 / (max - min);
+    for (int i = 0; i < size; i++) {
+        img->pixels[i] = (img->pixels[i] - min) * 255 / (max - min);
+    }
 }
 
 /*---------------------------------------------
- * Binarisation adaptative
+ * Binarisation simple
  *--------------------------------------------*/
-static void adaptive_binarize(ImageGray *img, int window_size, int offset)
+static void binarize_image(ImageGray *img, int threshold)
 {
-    int w = img->w, h = img->h;
-    int half = window_size / 2;
-
-    for (int y = 0; y < h; y++) {
-        for (int x = 0; x < w; x++) {
-            int sum = 0, count = 0;
-            for (int j = -half; j <= half; j++) {
-                for (int i = -half; i <= half; i++) {
-                    int nx = x + i, ny = y + j;
-                    if (nx >= 0 && nx < w && ny >= 0 && ny < h) {
-                        sum += img->gray[ny * w + nx];
-                        count++;
-                    }
-                }
-            }
-            int mean = sum / count;
-            int val = img->gray[y * w + x];
-            img->bin[y * w + x] = (val < mean - offset) ? 0 : 255;
-        }
+    int size = img->w * img->h;
+    for (int i = 0; i < size; i++) {
+        img->pixels[i] = (img->pixels[i] < threshold) ? 0 : 255;
     }
 }
 
@@ -99,7 +82,7 @@ int preprocess_image(ImageGray *img)
 {
     if (!img) return -1;
     enhance_contrast(img);
-    adaptive_binarize(img, 15, 10);
+    binarize_image(img, 128);
     return 0;
 }
 

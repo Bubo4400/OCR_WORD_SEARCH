@@ -1,7 +1,11 @@
 #include "grid_detection.h"
+#include "image_processing.h"
+#include "image_utils.h"
+#include "contour_detection.h"   // <-- ajoute cette ligne
+#include <sys/stat.h>
 #include <stdio.h>
 #include <stdlib.h>
-
+#include <string.h> 
 BoundingBox detect_main_grid(BoundingBox *boxes, int count)
 {
     if (count == 0) return (BoundingBox){0,0,0,0};
@@ -20,22 +24,33 @@ BoundingBox detect_main_grid(BoundingBox *boxes, int count)
     printf("Grille détectée : x=%d y=%d w=%d h=%d\n", grid.x, grid.y, grid.w, grid.h);
     return grid;
 }
-
 void extract_cells(ImageGray *img, BoundingBox grid, int rows, int cols)
 {
     int cell_w = grid.w / cols;
     int cell_h = grid.h / rows;
-    printf("Découpage grille : %d lignes x %d colonnes\n", rows, cols);
+
+    // Création du dossier "out/cells"
+    struct stat st = {0};
+    if (stat("out", &st) == -1) mkdir("out", 0755);
+    if (stat("out/cells", &st) == -1) mkdir("out/cells", 0755);
+
+    printf("📦 Sauvegarde des cases dans out/cells/ ...\n");
 
     for (int r = 0; r < rows; r++) {
         for (int c = 0; c < cols; c++) {
             int x = grid.x + c * cell_w;
             int y = grid.y + r * cell_h;
-            printf("Case (%d,%d) : x=%d y=%d w=%d h=%d\n",
-                   r, c, x, y, cell_w, cell_h);
-            // Ici, tu pourras sauvegarder la lettre ou extraire une sous-image.
+
+            ImageGray *cell = crop_image(img, x, y, cell_w, cell_h);
+            if (!cell) continue;
+
+            char fname[256];
+            snprintf(fname, sizeof(fname), "out/cells/cell_%02d_%02d.bmp", r, c);
+            save_gray_bmp(cell, fname);
+            free_image_gray(cell);
         }
     }
+    printf("✅ %d x %d cases enregistrées.\n", rows, cols);
 }
 
 void extract_side_words(ImageGray *img, BoundingBox grid)
