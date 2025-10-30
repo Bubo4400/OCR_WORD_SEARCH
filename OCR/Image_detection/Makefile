@@ -8,12 +8,9 @@ BIN = ocr_detect
 all: $(BIN)
 
 $(BIN): $(OBJS)
-	@echo "🧩 Édition des liens..."
 	$(CC) $(OBJS) -o $(BIN) $(LDFLAGS) -lm
-	@echo "✅ Compilation terminée : $(BIN)"
 
 %.o: %.c
-	@echo "🧩 Compilation de $<..."
 	$(CC) $(CFLAGS) -c $< -o $@
 
 clean:

@@ -86,12 +86,53 @@ void extract_cells(ImageGray *img, BoundingBox grid, int rows, int cols){
     printf("✅ %d x %d cases enregistrées.\n",rows,cols);
 }
 
-void extract_side_words(ImageGray *img, BoundingBox grid){
+void extract_side_words(ImageGray *img, BoundingBox grid) {
     printf("Recherche des mots à côté de la grille...\n");
-    int margin = 10;
-    BoundingBox left = {0,0,grid.x-margin,img->h};
-    BoundingBox right = {grid.x+grid.w+margin,0,img->w-(grid.x+grid.w+margin),img->h};
-    printf("Zone gauche : x=%d w=%d\n",left.x,left.w);
-    printf("Zone droite : x=%d w=%d\n",right.x,right.w);
+
+    struct stat st={0};
+    if(stat("out",&st)==-1) mkdir("out",0755);
+    if(stat("out/words",&st)==-1) mkdir("out/words",0755);
+
+    // Marges autour de la grille
+    int margin = 5;
+
+    BoundingBox zones[4];
+    // haut
+    zones[0] = (BoundingBox){grid.x-margin, 0, grid.w+2*margin, grid.y};
+    // bas
+    zones[1] = (BoundingBox){grid.x-margin, grid.y+grid.h, grid.w+2*margin, img->h-(grid.y+grid.h)};
+    // gauche
+    zones[2] = (BoundingBox){0, grid.y-margin, grid.x, grid.h+2*margin};
+    // droite
+    zones[3] = (BoundingBox){grid.x+grid.w, grid.y-margin, img->w-(grid.x+grid.w), grid.h+2*margin};
+
+    const char *names[4] = {"top","bottom","left","right"};
+    for(int z=0; z<4; z++){
+        BoundingBox zb = zones[z];
+        if(zb.w<=0 || zb.h<=0) continue;
+
+        ImageGray *zone_img = crop_image(img, zb.x, zb.y, zb.w, zb.h);
+        if(!zone_img) continue;
+
+        BoundingBox *boxes = NULL;
+        int count = 0;
+        find_contours(zone_img, &boxes, &count);
+
+        printf("Zone %s : %d lettres détectées\n", names[z], count);
+
+        for(int i=0;i<count;i++){
+            BoundingBox b = boxes[i];
+            ImageGray *letter = crop_image(zone_img, b.x, b.y, b.w, b.h);
+            if(!letter) continue;
+
+            char fname[256];
+            snprintf(fname,sizeof(fname),"out/words/%s_letter_%03d.bmp",names[z],i);
+            save_gray_bmp(letter,fname);
+            free_image_gray(letter);
+        }
+
+        free(boxes);
+        free_image_gray(zone_img);
+    }
 }
 
