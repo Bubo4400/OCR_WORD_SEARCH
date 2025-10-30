@@ -1,14 +1,15 @@
 CC = gcc
 CFLAGS = -Wall -Wextra -std=c99 `sdl2-config --cflags`
-LDFLAGS = `sdl2-config --libs` -lSDL2_image
-OBJ = main.o image_processing.o image_utils.o
+LDFLAGS = `sdl2-config --libs` -lSDL2_image -lm
+
+OBJS = main.o image_processing.o image_utils.o contour_detection.o grid_detection.o
 BIN = ocr_detect
 
 all: $(BIN)
 
-$(BIN): $(OBJ)
+$(BIN): $(OBJS)
 	@echo "🧩 Édition des liens..."
-	$(CC) $(OBJ) -o $(BIN) $(LDFLAGS)
+	$(CC) $(OBJS) -o $(BIN) $(LDFLAGS) -lm
 	@echo "✅ Compilation terminée : $(BIN)"
 
 %.o: %.c
@@ -16,8 +17,8 @@ $(BIN): $(OBJ)
 	$(CC) $(CFLAGS) -c $< -o $@
 
 clean:
-	rm -f $(OBJ) $(BIN)
+	rm -f $(OBJS) $(BIN)
 
 run: $(BIN)
-	./$(BIN) input.png output.bmp
+	./$(BIN) input.png output
 

@@ -7,10 +7,7 @@ typedef struct {
     int x, y, w, h;
 } BoundingBox;
 
-// Détection de contours binaires (noir/blanc)
 int find_contours(ImageGray *img, BoundingBox **out_boxes, int *count);
-
-// Dessine les contours (pour visualisation)
 void draw_contours(SDL_Renderer *ren, BoundingBox *boxes, int count);
 
 #endif
