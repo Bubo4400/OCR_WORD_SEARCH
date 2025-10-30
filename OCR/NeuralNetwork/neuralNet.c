@@ -11,7 +11,7 @@
 #define OUTPUT_NODES 1
 
 #define LEARNING_RATE 0.25
-#define EPOCHS 5000
+#define EPOCHS 2000
 
 // ----------------------- Global -----------------------
 
@@ -104,8 +104,8 @@ double train(int s, double in[s][INPUT_NODES], double expect[s])
 // Tests the Neural Network
 void test(int s, double in[s][INPUT_NODES], double expect[s])
 {
-    printf("A  B  | Expected  Output\n");
-    printf("------|-----------------\n");
+    printf("\tA  B  | Expected | Output | Out\n");
+    printf("\t------|----------|--------|--------\n");
 
     for (int i = 0; i < 4; i++)
     {
@@ -115,8 +115,8 @@ void test(int s, double in[s][INPUT_NODES], double expect[s])
         int ans = 0;
         if (out > 0.5) ans = 1;
 
-        printf("%.0f  %.0f  | %.0f         %i\n", 
-               in[i][0], in[i][1], expect[i], ans);
+        printf("\t%.0f  %.0f  | %.0f        | %i      | %.4f\n", 
+               in[i][0], in[i][1], expect[i], ans, out);
     }
 }
 
@@ -139,20 +139,28 @@ int main(int argc, char *argv[])
         printf("Training Neural Network...\n\n");
         int epoch;
         double trainAccu = 0;
-        for (epoch = 1; epoch < EPOCHS+1; epoch++)
+        for (epoch = 1; epoch < EPOCHS; epoch++)
         {
             trainAccu = train(4, inputs, expected);
 
             if (epoch % 500 == 0)
-                printf("void Epoch(%d)\n{\n     Training accuracy: %.1f%%\n}\n\n", epoch, trainAccu * 100);
-
-            if (trainAccu >= 0.9)
-                break;
+            {
+                printf("void Epoch(%d)\n"
+                        "{\n"
+                        "\tTraining accuracy: %.1f%%\n"
+                        "\tTest:\n", epoch, trainAccu * 100);
+                test(4, inputs, expected);
+                printf("}\n\n");
+            }
         }
-                printf("void Epoch(%d)\n{\n     Training accuracy: %.1f%%\n}\n\n", epoch, trainAccu * 100);
-
-        printf("Training completed!\nTesting Model...\n");
+        printf("void Epoch(%d)\n"
+                "{\n"
+                "\tTraining accuracy: %.1f%%\n"
+                "\tTest:\n", epoch, trainAccu * 100);
         test(4, inputs, expected);
+        printf("}\n\n");
+
+        printf("Training completed!\n");
     }
     else if (!strcmp(argv[1], "Test"))
     {
