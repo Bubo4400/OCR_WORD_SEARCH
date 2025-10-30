@@ -53,6 +53,15 @@ int main(int argc, char *argv[]) {
     int nrows=0, ncols=0;
     detect_grid_from_boxes(boxes, count, rows, &nrows, cols, &ncols);
 
+    // Détection de la grille principale
+    BoundingBox grid_box = detect_main_grid(boxes,count);
+
+    // Extraction de toutes les cases de la grille
+    extract_cells(img, grid_box, nrows, ncols);
+
+    // Extraction des mots autour de la grille
+    extract_side_words(img, grid_box);
+
     Uint8 *pixels = malloc(img->w * img->h * 3);
     for (int i = 0; i < img->w * img->h; i++) {
         pixels[i*3 + 0] = img->pixels[i];
@@ -68,7 +77,7 @@ int main(int argc, char *argv[]) {
             if (e.type == SDL_QUIT || (e.type == SDL_KEYDOWN && e.key.keysym.sym == SDLK_ESCAPE))
                 running = 0;
 
-            /* ✅ Touche R = rotation de l'image */
+            // Rotation 90° avec recalcul
             if (e.type == SDL_KEYDOWN && e.key.keysym.sym == SDLK_r) {
                 printf("🔄 Rotation 90°...\n");
                 ImageGray *rot = rotate_image_90(img);
@@ -77,9 +86,14 @@ int main(int argc, char *argv[]) {
                     img = rot;
                     preprocess_image(img);
                     save_gray_bmp(img, output_file);
+
                     free(boxes);
                     find_contours(img, &boxes, &count);
                     detect_grid_from_boxes(boxes, count, rows, &nrows, cols, &ncols);
+
+                    grid_box = detect_main_grid(boxes,count);
+                    extract_cells(img, grid_box, nrows, ncols);
+                    extract_side_words(img, grid_box);
 
                     free(pixels);
                     pixels = malloc(img->w * img->h * 3);
