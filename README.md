@@ -49,12 +49,24 @@ sudo apt-get install libsdl2-dev
 
 3. **Compile the project:**
 
+Go into desired file and execute:
 ```bash
 make
 ```
 
 4. **Usage**
-- For the image detection part : 
+
+- Image detection: 
 ```bash
-./ocr <name of image> <name for output>
+./ocr_detect <name of image> <name for output>
+```
+
+- Neural Network:
+```bash
+./neuralNet <Train|Test|Identify A B>
+```
+
+- Solver:
+```bash
+./solver <name of file with grid> <word to be searched>
 ```
