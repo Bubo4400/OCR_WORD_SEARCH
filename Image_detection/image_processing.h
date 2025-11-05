@@ -7,12 +7,12 @@
 typedef struct {
     int w;
     int h;
-    Uint8 *pixels; // niveaux de gris
+    Uint8 *pixels; 
 } ImageGray;
 
 ImageGray *load_image_gray(const char *path);
 void free_image_gray(ImageGray *img);
-int preprocess_image(ImageGray *img); /* contraste + binarisation adaptative */
+int preprocess_image(ImageGray *img); 
 
 #endif
 
