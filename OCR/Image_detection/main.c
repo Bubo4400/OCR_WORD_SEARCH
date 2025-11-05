@@ -48,19 +48,8 @@ int main(int argc, char *argv[]) {
     find_contours(img, &boxes, &count);
     printf("Contours détectés : %d\n", count);
 
-    int *rows = malloc(sizeof(int)*1000);
-    int *cols = malloc(sizeof(int)*1000);
-    int nrows=0, ncols=0;
-    detect_grid_from_boxes(boxes, count, rows, &nrows, cols, &ncols);
-
-    // Détection de la grille principale
-    BoundingBox grid_box = detect_main_grid(boxes,count);
-
-    // Extraction de toutes les cases de la grille
-    extract_cells(img, grid_box, nrows, ncols);
-
-    // Extraction des mots autour de la grille
-    extract_side_words(img, grid_box);
+    BoundingBox grid_zone, word_zone;
+    detect_zones_auto(img, &word_zone, &grid_zone);
 
     Uint8 *pixels = malloc(img->w * img->h * 3);
     for (int i = 0; i < img->w * img->h; i++) {
@@ -71,29 +60,25 @@ int main(int argc, char *argv[]) {
     SDL_UpdateTexture(texture, NULL, pixels, img->w * 3);
 
     int running = 1;
+    double angle = 0.0;
     SDL_Event e;
     while (running) {
         while (SDL_PollEvent(&e)) {
             if (e.type == SDL_QUIT || (e.type == SDL_KEYDOWN && e.key.keysym.sym == SDLK_ESCAPE))
                 running = 0;
 
-            // Rotation 90° avec recalcul
             if (e.type == SDL_KEYDOWN && e.key.keysym.sym == SDLK_r) {
-                printf("🔄 Rotation 90°...\n");
-                ImageGray *rot = rotate_image_90(img);
-                if(rot){
+                angle += 5.0;
+                printf("Rotation de %.1f°\n", angle);
+                ImageGray *rot = rotate_image(img, angle);
+                if (rot) {
                     free_image_gray(img);
                     img = rot;
                     preprocess_image(img);
                     save_gray_bmp(img, output_file);
-
                     free(boxes);
                     find_contours(img, &boxes, &count);
-                    detect_grid_from_boxes(boxes, count, rows, &nrows, cols, &ncols);
-
-                    grid_box = detect_main_grid(boxes,count);
-                    extract_cells(img, grid_box, nrows, ncols);
-                    extract_side_words(img, grid_box);
+                    detect_zones_auto(img, &word_zone, &grid_zone);
 
                     free(pixels);
                     pixels = malloc(img->w * img->h * 3);
@@ -119,19 +104,24 @@ int main(int argc, char *argv[]) {
             SDL_Rect r = { boxes[i].x, boxes[i].y, boxes[i].w, boxes[i].h };
             SDL_RenderDrawRect(renderer, &r);
         }
+        SDL_SetRenderDrawColor(renderer, 0, 255, 0, 255);
+        SDL_Rect wrect = { word_zone.x, word_zone.y, word_zone.w, word_zone.h };
+        SDL_RenderDrawRect(renderer, &wrect);
+
+        SDL_SetRenderDrawColor(renderer, 0, 0, 255, 255);
+        SDL_Rect grect = { grid_zone.x, grid_zone.y, grid_zone.w, grid_zone.h };
+        SDL_RenderDrawRect(renderer, &grect);
 
         SDL_RenderPresent(renderer);
         SDL_Delay(16);
     }
 
-    free(rows);
-    free(cols);
     free(boxes);
     free(pixels);
+    free_image_gray(img);
     SDL_DestroyTexture(texture);
     SDL_DestroyRenderer(renderer);
     SDL_DestroyWindow(window);
-    free_image_gray(img);
     IMG_Quit();
     SDL_Quit();
 

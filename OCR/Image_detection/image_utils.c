@@ -2,7 +2,11 @@
 #include <SDL2/SDL_image.h>
 #include <stdlib.h>
 #include <stdio.h>
+#include <math.h>
 
+#ifndef M_PI
+#define M_PI 3.14159265358979323846
+#endif
 ImageGray *crop_image(ImageGray *src, int x, int y, int w, int h){
     if(!src) return NULL;
     ImageGray *crop = malloc(sizeof(ImageGray));
@@ -47,24 +51,27 @@ void draw_rect(SDL_Renderer *ren, Rect r, SDL_Color color){
     SDL_RenderDrawRect(ren,&rect);
 }
 
-/* ✅ Nouvelle fonction de rotation à 90° */
-ImageGray *rotate_image_90(ImageGray *src){
-    if(!src) return NULL;
-    ImageGray *res = malloc(sizeof(ImageGray));
-    if(!res) return NULL;
-    res->w = src->h;
-    res->h = src->w;
-    res->pixels = malloc(res->w * res->h);
-    if(!res->pixels){ free(res); return NULL; }
+ImageGray *rotate_image(ImageGray *src, double angle_deg) {
+    if (!src) return NULL;
+    double angle = angle_deg * M_PI / 180.0;
+    double cosA = cos(angle), sinA = sin(angle);
+    int w = src->w, h = src->h;
 
-    for(int y=0;y<src->h;y++){
-        for(int x=0;x<src->w;x++){
-            int v = src->pixels[y*src->w + x];
-            int tx = src->h - 1 - y;
-            int ty = x;
-            res->pixels[ty*res->w + tx] = v;
+    ImageGray *rot = malloc(sizeof(ImageGray));
+    rot->w = w;
+    rot->h = h;
+    rot->pixels = malloc(w * h);
+    for (int y = 0; y < h; y++) {
+        for (int x = 0; x < w; x++) {
+            int cx = w / 2, cy = h / 2;
+            int xr = (int)((x - cx) * cosA + (y - cy) * sinA + cx);
+            int yr = (int)(-(x - cx) * sinA + (y - cy) * cosA + cy);
+            if (xr >= 0 && xr < w && yr >= 0 && yr < h)
+                rot->pixels[y * w + x] = src->pixels[yr * w + xr];
+            else
+                rot->pixels[y * w + x] = 255;
         }
     }
-    return res;
+    return rot;
 }
 
