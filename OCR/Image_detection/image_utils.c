@@ -74,4 +74,54 @@ ImageGray *rotate_image(ImageGray *src, double angle_deg) {
     }
     return rot;
 }
+ImageGray *rotate_image_centered(ImageGray *src, double angle_deg) {
+    if (!src) return NULL;
+    double angle = angle_deg * M_PI / 180.0;
 
+    int w = src->w, h = src->h;
+    int cx = w / 2, cy = h / 2;
+
+    ImageGray *rot = malloc(sizeof(ImageGray));
+    rot->w = w;
+    rot->h = h;
+    rot->pixels = malloc(w * h);
+    for (int i = 0; i < w * h; i++) rot->pixels[i] = 255;
+
+    for (int y = 0; y < h; y++) {
+        for (int x = 0; x < w; x++) {
+            int dx = x - cx;
+            int dy = y - cy;
+            int src_x = (int)( cos(-angle) * dx - sin(-angle) * dy + cx );
+            int src_y = (int)( sin(-angle) * dx + cos(-angle) * dy + cy );
+            if (src_x >= 0 && src_x < w && src_y >= 0 && src_y < h)
+                rot->pixels[y*w + x] = src->pixels[src_y*w + src_x];
+        }
+    }
+    return rot;
+}
+ImageGray *rotate_image_expand(ImageGray *src, double angle_deg) {
+    if (!src) return NULL;
+    double angle = angle_deg * M_PI / 180.0;
+    int w = src->w, h = src->h;
+
+    int new_size = (int)(sqrt(w*w + h*h));
+    int cx = new_size / 2, cy = new_size / 2;
+    ImageGray *rot = malloc(sizeof(ImageGray));
+    rot->w = new_size;
+    rot->h = new_size;
+    rot->pixels = malloc(new_size * new_size);
+    for (int i = 0; i < new_size * new_size; i++) rot->pixels[i] = 255;
+
+    for (int y = 0; y < new_size; y++) {
+        for (int x = 0; x < new_size; x++) {
+            int dx = x - cx;
+            int dy = y - cy;
+            int src_x = (int)( cos(-angle)*dx - sin(-angle)*dy + w/2 );
+            int src_y = (int)( sin(-angle)*dx + cos(-angle)*dy + h/2 );
+            if (src_x >= 0 && src_x < w && src_y >= 0 && src_y < h)
+                rot->pixels[y*new_size + x] = src->pixels[src_y*w + src_x];
+        }
+    }
+
+    return rot;
+}
