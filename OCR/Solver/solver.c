@@ -60,14 +60,6 @@ char **convert(const char *filename)
 
     fclose(f);
 
-    // Verifier test.
-    for (int i = 0; i < nb_lignes; i++)
-    {
-        for (int j = 0; j < nb_colonnes; j++)
-            printf("%c ", grid[i][j]);
-        printf("\n");
-    }
-
     return grid;
 }
 
@@ -129,13 +121,14 @@ int *search(char **grid, char *name)
 
 int main(int argc, char *argv[])
 {
-    printf("%s\n", argv[1]);
-    printf("%s\n", argv[2]);
     char **grille = convert(argv[1]);
 
     int *coords;
     coords = search(grille, argv[2]);
-    printf("Trouvé en (%d, %d) jusque (%d, %d)\n", coords[0], coords[1], coords[2], coords[3]);
+    if(coords[0] == -1){
+        printf("Not Found.\n");
+    }
+    else printf("Trouvé en (%d, %d) jusque (%d, %d)\n", coords[0], coords[1], coords[2], coords[3]);
 
     for (int i = 0; grille[i] != NULL; i++)
         free(grille[i]);
