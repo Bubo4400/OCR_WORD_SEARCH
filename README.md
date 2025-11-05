@@ -49,7 +49,7 @@ sudo apt-get install libsdl2-dev
 
 3. **Compile the project:**
 
-Go into desired file and execute:
+Go into desired folder and execute:
 ```bash
 make
 ```
