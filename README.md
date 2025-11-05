@@ -56,5 +56,5 @@ make
 4. **Usage**
 
 ```bash
-echo "still not sure"
+For the image detection part, go to the folder with this name and run : make <name of image to test> <name of final file>.
 ```
