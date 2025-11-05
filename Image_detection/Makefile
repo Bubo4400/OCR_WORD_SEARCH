@@ -15,7 +15,6 @@ $(BIN): $(OBJS)
 
 clean:
 	rm -f $(OBJS) $(BIN)
-
 run: $(BIN)
 	./$(BIN) input.png output
 

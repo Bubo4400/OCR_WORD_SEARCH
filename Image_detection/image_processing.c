@@ -10,7 +10,6 @@
 
 ImageGray *load_image_gray(const char *path) {
     SDL_Surface *surf = IMG_Load(path);
-    if (!surf) { fprintf(stderr,"Erreur : impossible de charger %s\n", path); return NULL; }
 
     ImageGray *img = malloc(sizeof(ImageGray));
     img->w = surf->w;
