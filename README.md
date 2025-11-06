@@ -58,7 +58,7 @@ make
 
 - Image detection: 
 ```bash
-./ocr_detect <name of image> <name for output>
+./ocr_detect <name of image(png)> <name for output>
 ```
 
 - Neural Network:
