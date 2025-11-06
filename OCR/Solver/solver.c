@@ -128,7 +128,7 @@ int convert_to_uppercase(char *name)
         {
             name[i] = name[i] - 'a' + 'A';
         }
-        else if (name[i] <= 'A' || name[i] >= 'Z') 
+        else if (name[i] < 'A' || name[i] > 'Z') 
         {
             err(EXIT_FAILURE, "Not valid input");
         }
