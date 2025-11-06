@@ -2,7 +2,7 @@
 #include <stdlib.h>
 #include <err.h>
 
-char **convert(const char *filename)
+char **convert_to_grid(const char *filename)
 {
     FILE *f = fopen(filename, "r");
     if (f == NULL)
@@ -119,22 +119,78 @@ int *search(char **grid, char *name)
     return result;
 }
 
+int convert_to_uppercase(char *name) 
+{
+    if (name == NULL) err(EXIT_FAILURE, "Name can't be empty");
+    for (int i = 0; name[i] != '\0'; i++) 
+    {
+        if (name[i] >= 'a' && name[i] <= 'z') 
+        {
+            name[i] = name[i] - 'a' + 'A';
+        }
+        else if (name[i] <= 'A' || name[i] >= 'Z') 
+        {
+            err(EXIT_FAILURE, "Not valid input");
+        }
+    }
+
+    return 0;
+}
+
 int main(int argc, char *argv[])
 {
-    char **grille = convert(argv[1]);
+    if(argc != 3) err(EXIT_FAILURE, "Needs more parameters");
+    char **grille = convert_to_grid(argv[1]);
 
     int *coords;
+    convert_to_uppercase(argv[2]);
     coords = search(grille, argv[2]);
-    if(coords[0] == -1){
+    if(coords[0] == -1)
+    {
         printf("Not Found.\n");
     }
-    else printf("Trouvé en (%d, %d) jusque (%d, %d)\n", coords[0], coords[1], coords[2], coords[3]);
+    else 
+    {
+        printf("Trouvé en (%d, %d) jusque (%d, %d)\n", coords[0], coords[1], coords[2], coords[3]);
+    }
 
     for (int i = 0; grille[i] != NULL; i++)
+    {
         free(grille[i]);
+    }
     free(grille);
     free(coords);
 
     return 0;
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
