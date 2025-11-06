@@ -34,11 +34,53 @@ double sigDerivation(double x)
     return x * (1.0 - x);
 }
 
-// Initialisation of weights and bias
+// Initialisation of weights and bias 
+// Only called if no file exists
 void initialisation(double *w, int size)
 {
     for (int i = 0; i < size; i++)
         w[i] = ((double)rand() / RAND_MAX) * 2.0 - 1.0;
+}
+
+// Save Weights and Bias into file given in argument
+void saveInformation(char *filename)
+{
+    FILE *file = fopen(filename, "wb");
+    if (!file)
+        errx(1, "Could not save Information to \"%s\".\n", filename);
+
+    fwrite(hiddenWeights, sizeof(double), INPUT_NODES * HIDDEN_NODES, file);
+    fwrite(outputWeights, sizeof(double), HIDDEN_NODES * OUTPUT_NODES, file);
+    fwrite(hiddenBias, sizeof(double), HIDDEN_NODES, file);
+    fwrite(outputBias, sizeof(double), OUTPUT_NODES, file);
+
+    fclose(file);
+    printf("Succesfully saved information to \"%s\".\n", filename);
+}
+
+// Loads weigths and bias from file given in argument
+// If the file does not exist, it initialises them 
+void loadInformation(char *filename)
+{
+    FILE *file = fopen(filename, "rb");
+    if (!file)
+    {
+        printf("The file \"%s\" does not exist.\n", filename);
+        printf("Initialising random weights.\n");
+        initialisation(hiddenWeights, INPUT_NODES * HIDDEN_NODES);
+        initialisation(outputWeights, HIDDEN_NODES * OUTPUT_NODES);
+        initialisation(hiddenBias, HIDDEN_NODES);
+        initialisation(outputBias, OUTPUT_NODES);
+        return;
+    }
+
+    fread(hiddenWeights, sizeof(double), INPUT_NODES * HIDDEN_NODES, file);
+    fread(outputWeights, sizeof(double), HIDDEN_NODES * OUTPUT_NODES, file);
+    fread(hiddenBias, sizeof(double), HIDDEN_NODES, file);
+    fread(outputBias, sizeof(double), OUTPUT_NODES, file);
+
+    fclose(file);
+    printf("Succesfully loaded information from \"%s\".\n", filename);
 }
 
 // Gives prediction of what it is
@@ -123,19 +165,16 @@ void test(int s, double in[s][INPUT_NODES], double expect[s])
 int main(int argc, char *argv[])
 {
     if (argc < 2)
-        errx(1, "Usage: ./neuralNet [Train|Test|Identify]");
+        errx(1, "Usage: ./neuralNet <Train|Test|Identify A B>.");
 
     double inputs[4][2] = {{0,0}, {0,1}, {1,0}, {1,1}};
     double expected[4]  = {1, 0, 0, 1};
 
     if (!strcmp(argv[1], "Train"))
     {
-        printf("Initialising the weights....\n");
-        initialisation(hiddenWeights, INPUT_NODES * HIDDEN_NODES);
-        initialisation(outputWeights, HIDDEN_NODES * OUTPUT_NODES);
-        initialisation(hiddenBias, HIDDEN_NODES);
-        initialisation(outputBias, OUTPUT_NODES);
-
+        printf("Loading the weights....\n");
+        loadInformation("trainingInformation.bin");
+        
         printf("Training Neural Network...\n\n");
         int epoch;
         double trainAccu = 0;
@@ -161,29 +200,39 @@ int main(int argc, char *argv[])
         printf("}\n\n");
 
         printf("Training completed!\n");
+        saveInformation("trainingInformation.bin");
     }
     else if (!strcmp(argv[1], "Test"))
     {
-        printf("Initialising the weights....\n");
-        initialisation(hiddenWeights, INPUT_NODES * HIDDEN_NODES);
-        initialisation(outputWeights, HIDDEN_NODES * OUTPUT_NODES);
-        initialisation(hiddenBias, HIDDEN_NODES);
-        initialisation(outputBias, OUTPUT_NODES);
-
-        //TODO
+        printf("Loading the weights....\n");
+        loadInformation("trainingInformation.bin");
+        printf("\n");
+        
+        printf("Test\n{\n");
+        test(4, inputs, expected);
+        printf("}\n\n");
     }
     else if (!strcmp(argv[1], "Identify"))
     {
+        if (argc != 4)
+            errx(1, "Usage: ./neuralNet <Train|Test|Identify A B>.");
         printf("Initialising the weights....\n");
-        initialisation(hiddenWeights, INPUT_NODES * HIDDEN_NODES);
-        initialisation(outputWeights, HIDDEN_NODES * OUTPUT_NODES);
-        initialisation(hiddenBias, HIDDEN_NODES);
-        initialisation(outputBias, OUTPUT_NODES);
-
-        //TODO
+        loadInformation("trainingInformation.bin");
+        printf("\n");
+        
+        printf("Thinking...\n");
+        double out;
+        int A = atoi(argv[2]);
+        int B = atoi(argv[3]);
+        double input[] = {A, B};
+        Forward(input, &out);
+        if (out < 0.5)
+            printf("Output : 0\n");
+        else
+            printf("Output : 1\n");
     }
     else 
-        errx(1, "Usage: ./neuralNet [Train|Test|Identify]");
+        errx(1, "Usage: ./neuralNet <Train|Test|Identify A B>.");
 
     return 0;
 }
