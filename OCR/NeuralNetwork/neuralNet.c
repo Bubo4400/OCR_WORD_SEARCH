@@ -173,7 +173,7 @@ int main(int argc, char *argv[])
     if (!strcmp(argv[1], "Train"))
     {
         printf("Loading the weights....\n");
-        loadInformation("trainingInformation.bin");
+        loadInformation("trainingData.bin");
         
         printf("Training Neural Network...\n\n");
         int epoch;
@@ -184,7 +184,7 @@ int main(int argc, char *argv[])
 
             if (epoch % 500 == 0)
             {
-                printf("void Epoch(%d)\n"
+                printf("Epoch(%d)\n"
                         "{\n"
                         "\tTraining accuracy: %.1f%%\n"
                         "\tTest:\n", epoch, trainAccu * 100);
@@ -192,7 +192,7 @@ int main(int argc, char *argv[])
                 printf("}\n\n");
             }
         }
-        printf("void Epoch(%d)\n"
+        printf("Epoch(%d)\n"
                 "{\n"
                 "\tTraining accuracy: %.1f%%\n"
                 "\tTest:\n", epoch, trainAccu * 100);
@@ -200,15 +200,15 @@ int main(int argc, char *argv[])
         printf("}\n\n");
 
         printf("Training completed!\n");
-        saveInformation("trainingInformation.bin");
+        saveInformation("trainingData.bin");
     }
     else if (!strcmp(argv[1], "Test"))
     {
         printf("Loading the weights....\n");
-        loadInformation("trainingInformation.bin");
+        loadInformation("trainingData.bin");
         printf("\n");
         
-        printf("Test\n{\n");
+        printf("Test()\n{\n");
         test(4, inputs, expected);
         printf("}\n\n");
     }
@@ -217,19 +217,23 @@ int main(int argc, char *argv[])
         if (argc != 4)
             errx(1, "Usage: ./neuralNet <Train|Test|Identify A B>.");
         printf("Initialising the weights....\n");
-        loadInformation("trainingInformation.bin");
-        printf("\n");
-        
-        printf("Thinking...\n");
+        loadInformation("trainingData.bin");
+        printf("Thinking...\n\n");
+
         double out;
         int A = atoi(argv[2]);
         int B = atoi(argv[3]);
         double input[] = {A, B};
         Forward(input, &out);
-        if (out < 0.5)
-            printf("Output : 0\n");
-        else
-            printf("Output : 1\n");
+        int ans = 0;
+        if (out > 0.5) ans = 1;
+        
+        printf("Answer()\n{\n");
+        printf("\tA  B  | Output | Out\n");
+        printf("\t------|--------|--------\n");
+        printf("\t%i  %i  | %i      | %.4f\n",
+               A, B, ans, out);
+        printf("}\n");
     }
     else 
         errx(1, "Usage: ./neuralNet <Train|Test|Identify A B>.");
