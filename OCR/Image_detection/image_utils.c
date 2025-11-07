@@ -61,7 +61,7 @@ void draw_rect(SDL_Renderer *ren, Rect r, SDL_Color color){
 
 // Rotation a amméliorer :rotation par nearest-neighbor
 ImageGray *rotate_image(ImageGray *src, double angle_deg) {
-  :  if (!src) return NULL;
+    if (!src) return NULL;
     double angle = angle_deg * M_PI / 180.0;
     double cosA = cos(angle), sinA = sin(angle);
     int w = src->w, h = src->h;
