@@ -4,6 +4,8 @@
 ![Status](https://img.shields.io/badge/Status-Active-success)
 ![License](https://img.shields.io/badge/License-MIT-green)
 
+![Project Banner](images/banner.png)
+
 ## Overview
 **NeurOctopus OCR Word Search Solver** is a complete C application that automatically solves word search puzzles from images. The system uses a multi-stage pipeline:
 
