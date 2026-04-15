@@ -1,7 +1,7 @@
 # NeurOctopus – OCR Word Search Solver
 
 ![Project Banner](https://img.shields.io/badge/C-SDL2-blue)
-![Status](https://img.shields.io/badge/Status-Active-success)
+![Status](https://img.shields.io/badge/Status-Retired-Red)
 ![License](https://img.shields.io/badge/License-MIT-green)
 
 ![Project Banner](images/banner.png)
